@@ -1,0 +1,16 @@
+const plurals=[['cat','cats'],['bus','buses'],['pencil','pencils'],['box','boxes'],['dish','dishes'],['watch','watches'],['baby','babies'],['tomato','tomatoes'],['party','parties'],['photo','photos']];
+const choices=[['dog','dogs'],['bus','buses'],['baby','babies'],['box','boxes'],['phone','phones'],['watch','watches']];
+const fixes=[['My two cat are black.','My two cats are black.'],['There are three box in the room.','There are three boxes in the room.'],['The babyes are happy.','The babies are happy.'],['I can see four bus.','I can see four buses.']];
+const clean=x=>x.toLowerCase().trim().replace(/[.!?]/g,'');
+const pluralBox=document.querySelector('#plural-inputs');
+plurals.forEach(([singular],i)=>pluralBox.insertAdjacentHTML('beforeend',`<label>${singular}<input data-kind="plural" data-index="${i}" /></label>`));
+const choiceBox=document.querySelector('#choice-inputs');
+choices.forEach(([singular,plural],i)=>choiceBox.insertAdjacentHTML('beforeend',`<div class="option"><span>${i+1}.</span><button data-answer="${singular}" data-index="${i}">${singular}</button><button data-answer="${plural}" data-index="${i}">${plural}</button></div>`));
+const fixBox=document.querySelector('#fix-inputs');
+fixes.forEach(([wrong],i)=>fixBox.insertAdjacentHTML('beforeend',`<label class="fix">${i+1}. ${wrong}<input data-kind="fix" data-index="${i}" /></label>`));
+const sentenceBox=document.querySelector('#sentence-inputs');
+for(let i=0;i<3;i++)sentenceBox.insertAdjacentHTML('beforeend',`<input class="long" data-kind="sentence" placeholder="Sentence ${i+1}" />`);
+const selected=Array(6).fill('');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-answer]');if(!b)return;const i=+b.dataset.index;selected[i]=b.dataset.answer;document.querySelectorAll(`[data-index="${i}"][data-answer]`).forEach(x=>x.classList.toggle('active',x===b));});
+const name=document.querySelector('#name');const check=document.querySelector('#check');name.addEventListener('input',()=>check.disabled=!name.value.trim());
+check.addEventListener('click',()=>{const a=[...document.querySelectorAll('[data-kind="plural"]')].map(x=>x.value);const c=[...document.querySelectorAll('[data-kind="fix"]')].map(x=>x.value);const d=[...document.querySelectorAll('[data-kind="sentence"]')].map(x=>x.value);const score=[plurals.filter((x,i)=>clean(a[i])===x[1]).length,choices.filter((x,i)=>selected[i]===x[1]).length,fixes.filter((x,i)=>clean(c[i])===clean(x[1])).length*2,d.filter(x=>/\b(two|three|four|five|six|seven|eight|nine|ten)\b/i.test(x)&&/s\b/i.test(x)).length*2];const total=score.reduce((a,b)=>a+b,0);document.querySelector('#worksheet').innerHTML=`<section class="result"><p class="eyebrow">Result for ${name.value}</p><h1>${total} <span>/ 30 points</span></h1><p>${total>=24?'Excellent work. You use plural nouns securely.':total>=18?'Good work. Review the mistakes and try again.':'Keep practising the rules, then try again.'}</p><div class="scoregrid">${score.map((x,i)=>`<div><b>1.${i+1}</b><strong>${x} / ${[10,6,8,6][i]}</strong></div>`).join('')}</div><button onclick="window.print()">Print or save result</button></section>`;});
